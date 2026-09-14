@@ -1,0 +1,13 @@
+Squirrel game turns;
+
+- maybe have some different weapons to choose from (rapier, greatsword, arming sword + shield) different abilities tied to each
+- Give player a selection of 3 abilities
+- each ability has it's own dmg and stamina cost
+- ends turn when all stamina is used, + maybe seperate end turn button
+
+- enemy should advertise their move before player makes choice
+- try and include initiative style system
+- include enemy resistances/ vulnerabilities
+- maybe include a variety of enemies that could be chosen from?
+
+- combat wins if you reduce enemy to 0hp, loses if you die yourself
