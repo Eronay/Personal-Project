@@ -29,6 +29,8 @@ class Player:
         if self._resistant_check(ability, target) == True:
             print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
         damage = self.calc_dmg(ability, target)
+        target.health -= damage
+        self.dmg_modifier = 1
 
 
 
@@ -45,22 +47,26 @@ class Player:
             unblocked_dmg = modified_dmg - block_amount
             if unblocked_dmg <= 0:
                 print(f"{target.name} managed to avoid taking damage!")
-                return
+                return 0
             else:
-                print(f"{target.name} managed to reduce your damage by {block_amount}!")
+                print(f"{target.name} managed to reduce your attack by {block_amount}!")
                 if self._vulnerable_check(ability, target) == True:
                     final_damage = unblocked_dmg * 2
                     return final_damage
                 if self._resistant_check(ability, target) == True:
                     final_damage = math.ceil(unblocked_dmg *0.5)
                     return final_damage
-
-        if self._vulnerable_check(ability, target) == True:
-             final_damage = modified_dmg * 2
-             return final_damage
-        if self._resistant_check(ability, target) == True:
-             final_damage = math.ceil(modified_dmg*0.5)
-             return final_damage
+                else:
+                    return unblocked_dmg
+        else:
+            if self._vulnerable_check(ability, target) == True:
+                final_damage = modified_dmg * 2
+                return final_damage
+            if self._resistant_check(ability, target) == True:
+                final_damage = math.ceil(modified_dmg*0.5)
+                return final_damage
+            else:
+                return modified_dmg
 
 
     def _vulnerable_check(self, ability, target):
