@@ -9,6 +9,9 @@ class Player:
         self.name = name
         self.health = 100
         self.mana = 100
+        self.health_regen = 0
+        self.mana_regen = 5
+        self.buffs = {}
         self.is_alive = self.health > 0
         self.dmg_modifier = 1
         self.stats = {
@@ -30,20 +33,18 @@ class Player:
             print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
         damage = self.calc_dmg(ability, target)
         target.health -= damage
-        self.dmg_modifier = 1
 
 
-
-
-
+    def turn_start(self):
+        ## maybe handle buff expiration here or something??
 
     def calc_dmg(self, ability, target):
         base_damage = random.randint(self.abilities[ability]["dmg min"], self.abilities[ability]["dmg max"])
         ability_affinity = self.abilities[ability]["affinity"]
         modified_dmg = (base_damage + self.stats[ability_affinity]) * self.dmg_modifier
 
-        if target.chosen_ability["type"] == "Block":
-            block_amount = random.randint(target.abilities[target.chosen_ability]["block min"], target.abilities[target.chosen_ability]["block max"]) + target.stats["agility"]
+        if target.chosen_ability["type"] == "block":
+            block_amount = random.randint(target.abilities[target.chosen_ability]["block min"], target.abilities[target.chosen_ability]["block max"]) + target.stats[f"{target.abilities[target.chosen_ability]["affinity"]}"]
             unblocked_dmg = modified_dmg - block_amount
             if unblocked_dmg <= 0:
                 print(f"{target.name} managed to avoid taking damage!")
