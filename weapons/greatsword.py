@@ -8,6 +8,7 @@ class greatsword(Player):
                 "affinity": "strength",
                 "dmg min": 1,
                 "dmg max": 6,
+                "die count": 1,
                 "element": "physical",
                 "type": "attack",
                 "mana cost": 0
@@ -17,6 +18,7 @@ class greatsword(Player):
                 "affinity": "strength",
                 "dmg min": 1,
                 "dmg max": 12,
+                "die count": 1,
                 "element": "physical",
                 "type": "attack",
                 "mana cost": 2
@@ -26,14 +28,16 @@ class greatsword(Player):
                 "affinity": "vitality",
                 "block min": 1,
                 "block max": 6,
+                "die count": 1,
                 "type": "block",
                 "mana cost": 10
             },
 
             "Whirlwind": {
                 "affinity": "strength",
-                "dmg min": 3,
-                "dmg max": 24,
+                "dmg min": 1,
+                "dmg max": 8,
+                "die count": 3,
                 "element": "physical",
                 "type": "attack",
                 "mana cost": 40
