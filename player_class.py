@@ -14,6 +14,7 @@ class Player:
         self.buffs = {}
         self.is_alive = self.health > 0
         self.dmg_modifier = 1
+        self.rage_duration = 0
         self.stats = {
             "Strength": 3,
             "Agility" : 2,
@@ -26,17 +27,32 @@ class Player:
         if self.mana < mana_cost:
             print("Must construct additional pylons")
             return
-        print(f"You spend {mana_cost} energy to cast {ability} on {target.name}")
-        if self._vulnerable_check(ability, target) == True:
-            print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
-        if self._resistant_check(ability, target) == True:
-            print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
-        damage = self.calc_dmg(ability, target)
-        target.health -= damage
+        if self.abilities[ability]["type"] == "buff":
+            self.apply_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"])
+            print(f"You spend {mana_cost} energy to buff yourself with {self.abilities[ability]["effect"]}")
+        else:
+            print(f"You spend {mana_cost} energy to cast {ability} on {target.name}")
+            if self._vulnerable_check(ability, target) == True:
+                print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
+            if self._resistant_check(ability, target) == True:
+                print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
+            damage = self.calc_dmg(ability, target)
+            target.health -= damage
 
+    def apply_buff(self, duration, effect):
+        if effect == "rage":
+            self.dmg_modifier *= 2
+            self.rage_duration = duration
+            print("You fly into a rage")
 
     def turn_start(self):
-        ## maybe handle buff expiration here or something??
+        if self.rage_duration > 0:
+            self.rage_duration -= 1
+            if self.rage_duration == 0:
+                self.dmg_modifier *= 0.5
+                print("Your rage has worn off")
+            else:
+                print(f"You have {self.rage_duration} turns of rage left")
 
     def calc_dmg(self, ability, target):
         base_damage = 0
