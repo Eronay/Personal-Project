@@ -22,6 +22,19 @@ class Player:
             "Vitality" : 3
         }
 
+    def select_player_ability(self):
+        while True:
+            try:
+                selected_number = input("\nSelect Your Ability")
+                if selected_number < 1 or selected_number > len(self.abilities):
+                    print("Please select a number within range")
+                    continue
+                chosen_ability = list(self.abilities.keys())[selected_number - 1]
+                return chosen_ability
+            except ValueError:
+                print("You must select a number")
+                continue
+
     def use_ability(self, ability, target):
         mana_cost = self.abilities[ability]["mana cost"]
         if self.mana < mana_cost:
