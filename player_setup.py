@@ -21,7 +21,6 @@ def choose_weapon():
                 print("Please select a valid option")
                 continue
             chosen_weapon = weapons[chosen_number - 1]
-            print(f"\nYou have chosen to wield the {chosen_weapon}\n")
             return chosen_weapon
         except ValueError:
             print("\nPlease select a number within range\n")
@@ -34,10 +33,11 @@ def create_player(player_name, chosen_weapon):
 
 
 
-def test():
+def player_setup():
     player_name = create_player_name()
     chosen_weapon = choose_weapon()
     player = create_player(player_name, chosen_weapon)
+    print(f"{player.name}, you have chosen the {chosen_weapon} to wield in glorious combat. May you strikes land true!")
     return player
 
-test()
+player_setup()
