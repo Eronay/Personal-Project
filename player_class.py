@@ -48,11 +48,11 @@ class Player:
             print("Must construct additional pylons")
             return
         if self.abilities[ability]["type"] == "buff":
-            self.apply_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"])
+            self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"])
             print(f"You spend {mana_cost} energy to buff yourself with {self.abilities[ability]["effect"]}")
         else:
             print(f"You spend {mana_cost} energy to cast {ability} on {target.name}")
-            damage = self.calc_dmg(ability, target)
+            damage = self.calc_player_dmg(ability, target)
             if damage > 0:
                 if self._vulnerable_check(ability, target) == True:
                     print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
