@@ -5,7 +5,7 @@ class greatsword(Player):
         super().__init__(name)
         self.abilities = {
             "Swing": {
-                "affinity": "strength",
+                "affinity": "Strength",
                 "dmg min": 1,
                 "dmg max": 6,
                 "die count": 1,
@@ -15,7 +15,7 @@ class greatsword(Player):
             },
 
             "Great Swing": {
-                "affinity": "strength",
+                "affinity": "Strength",
                 "dmg min": 1,
                 "dmg max": 12,
                 "die count": 1,
@@ -25,7 +25,7 @@ class greatsword(Player):
             },
 
             "Endure": {
-                "affinity": "vitality",
+                "affinity": "Vitality",
                 "block min": 1,
                 "block max": 6,
                 "die count": 1,
@@ -34,7 +34,7 @@ class greatsword(Player):
             },
 
             "Whirlwind": {
-                "affinity": "strength",
+                "affinity": "Strength",
                 "dmg min": 1,
                 "dmg max": 8,
                 "die count": 3,

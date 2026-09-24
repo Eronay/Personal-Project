@@ -18,22 +18,25 @@ class Enemy:
         self.chosen_ability = chosen_ability
         print(f"{self.name} has chosen to use {chosen_ability}, think carefully!")
 
-    def use_enemy_ability(self, ability, target):
+    def use_enemy_ability(self, target):
+        ability = self.chosen_ability
         if self.abilities[ability]["type"] == "attack":
-            damage = self.calc_enemy_damage(ability, target)
+            damage = self.calc_enemy_damage(target)
             if damage <= 0:
                 print(f"The {self.name} attacks with {ability}, but you manage to block it!")
             else:
                 print(f"The {self.name} attacks you with {ability} and deals {damage} damage!")
                 target.health -= damage
+                target.is_alive = target.health > 0
 
-    def calc_enemy_damage(self, ability, target):
+    def calc_enemy_damage(self, target):
+        ability = self.chosen_ability
         base_damage = 0
         for i in range(0, self.abilities[ability]["die count"]):
-            base_damage += random.randint(self.abilities[ability]["dmg min"], self.abiilties[ability]["dmg max"])
+            base_damage += random.randint(self.abilities[ability]["dmg min"], self.abilities[ability]["dmg max"])
         ability_affinity = self.abilities[ability]["affinity"]
         modified_dmg = (base_damage + self.stats[ability_affinity]) * self.dmg_modifier
-        if target.chosen_ability["type"] == "block":
+        if target.abilities[target.chosen_ability]["type"] == "block":
             block_amount = 0
             for i in range(0, target.abilities[target.chosen_ability]["die count"]):
                 block_amount += random.randint(target.abilities[target.chosen_ability]["block min"], target.abilities[target.chosen_ability]["block max"])

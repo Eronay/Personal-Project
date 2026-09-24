@@ -3,6 +3,7 @@ from weapons.greatsword import greatsword
 
 def create_player_name():
     while True:
+  
         player_name = input("\nWhat is your name traveller?\n")
         if len(player_name) > 20:
             print("\nPlease select a shorter name\n")
@@ -37,7 +38,6 @@ def player_setup():
     player_name = create_player_name()
     chosen_weapon = choose_weapon()
     player = create_player(player_name, chosen_weapon)
-    print(f"{player.name}, you have chosen the {chosen_weapon} to wield in glorious combat. May you strikes land true!")
+    print(f"{player.name}, you have chosen the {chosen_weapon} to wield in glorious combat. May your strikes land true!")
     return player
 
-player_setup()

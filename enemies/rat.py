@@ -10,10 +10,12 @@ class Rat(Enemy):
             "Vitality": 1,
         }
 
+        self.vulnerabilities = []
+        self.resistances = []
 
         self.abilities = {
             "Scratch": {
-                "affinity": "strength",
+                "affinity": "Strength",
                 "dmg min": 1,
                 "dmg max": 4,
                 "die count": 1,
@@ -23,7 +25,7 @@ class Rat(Enemy):
             },
 
             "Bite":{
-                "affinity": "strength",
+                "affinity": "Strength",
                 "dmg min": 1,
                 "dmg max": 6,
                 "die count": 1,
@@ -33,7 +35,7 @@ class Rat(Enemy):
             },
 
             "Tail Block":{
-                "affinity": "vitality",
+                "affinity": "Vitality",
                 "block min": 1,
                 "block max": 4,
                 "die count": 1,
