@@ -10,7 +10,7 @@ class Player:
         self.health = 100
         self.mana = 100
         self.health_regen = 0
-        self.mana_regen = 5
+        self.mana_regen = 5 * self.stats["Intelligence"]
         self.buffs = {}
         self.is_alive = self.health > 0
         self.dmg_modifier = 1
@@ -30,6 +30,8 @@ class Player:
         print(f"You rolled a {initiative_roll} for your initiative")
 
     def select_player_ability(self):
+        for i, ability in enumerate(self.abilities):
+            print(f"{i+1}) {ability}")
         while True:
             try:
                 selected_number = int(input("\nSelect Your Ability"))
@@ -48,21 +50,28 @@ class Player:
         if self.mana < mana_cost:
             print("Must construct additional pylons")
             return
+        self.mana -= mana_cost
         if self.abilities[ability]["type"] == "buff":
             self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"])
-            print(f"You spend {mana_cost} energy to buff yourself with {self.abilities[ability]["effect"]}")
+            print(f"\nYou spend {mana_cost} energy to buff yourself with {self.abilities[ability]["effect"]}")
+        elif self.abilities[ability]["type"] == "attack":
+            print(f"\nYou spend {mana_cost} energy to use {ability} on {target.name}")
+            self.player_uses_attack(ability, target)
+        elif self.abilities[ability]["type"] == "block":
+            print(f"\nYou spend {mana_cost} mana in order to use {ability} to defend yourself")
+
+    def player_uses_attack(self, ability, target):
+        damage = self.calc_player_dmg(ability, target)
+        if damage > 0:
+            if self._vulnerable_check(ability, target) == True:
+                print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
+            if self._resistant_check(ability, target) == True:
+                print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
+            print(f"You deal {damage} damage")
+            target.health -= damage
+            target.is_alive = target.health > 0
         else:
-            print(f"You spend {mana_cost} energy to cast {ability} on {target.name}")
-            damage = self.calc_player_dmg(ability, target)
-            if damage > 0:
-                if self._vulnerable_check(ability, target) == True:
-                    print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
-                if self._resistant_check(ability, target) == True:
-                    print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
-                target.health -= damage
-                target.is_alive = target.health > 0
-            else:
-                print(f"{target.name} managed to avoid taking damage! The cheeky bugger!")
+            print(f"{target.name} managed to avoid taking damage! The cheeky bugger!")
 
     def apply_player_buff(self, duration, effect):
         if effect == "rage":
@@ -72,10 +81,13 @@ class Player:
             
 
     def player_turn_start(self):
+        ## Make regening mana a whole other function, then you can check for if you'll hit max mana and also apply buffs.
+        self.mana += self.mana_regen
+        print(f"You regain {self.mana_regen} mana at the start of your turn")
         if self.rage_duration > 0:
             self.rage_duration -= 1
             if self.rage_duration == 0:
-                self.dmg_modifier *= 0.5
+                self.dmg_modifier /= 2
                 print("Your rage has worn off")
             else:
                 print(f"You have {self.rage_duration} turns of rage left")
@@ -85,7 +97,7 @@ class Player:
         for i in range(0, self.abilities[ability]["die count"]):
             base_damage += random.randint(self.abilities[ability]["dmg min"], self.abilities[ability]["dmg max"])
         ability_affinity = self.abilities[ability]["affinity"]
-        modified_dmg = (base_damage + self.stats[ability_affinity]) * self.dmg_modifier
+        modified_dmg = math.ceil((base_damage + self.stats[ability_affinity]) * self.dmg_modifier)
         if target.abilities[target.chosen_ability]["type"] == "block":
             block_amount = 0
             for i in range(0, target.abilities[target.chosen_ability]["die count"]):
@@ -98,21 +110,21 @@ class Player:
                 print(f"{target.name} managed to reduce your attack by {block_amount}!")
                 if self._vulnerable_check(ability, target) == True:
                     final_damage = unblocked_dmg * 2
-                    return final_damage
+                    return math.ceil(final_damage)
                 if self._resistant_check(ability, target) == True:
                     final_damage = math.ceil(unblocked_dmg *0.5)
-                    return final_damage
+                    return math.ceil(final_damage)
                 else:
-                    return unblocked_dmg
+                    return math.ceil(unblocked_dmg)
         else:
             if self._vulnerable_check(ability, target) == True:
-                final_damage = modified_dmg * 2
+                final_damage = math.ceil(modified_dmg * 2)
                 return final_damage
             if self._resistant_check(ability, target) == True:
                 final_damage = math.ceil(modified_dmg*0.5)
                 return final_damage
             else:
-                return modified_dmg
+                return math.ceil(modified_dmg)
 
 
     def _vulnerable_check(self, ability, target):

@@ -44,10 +44,10 @@ class Enemy:
                 return 0
             else:
                 print(f"You managed to reduce their damage by {modified_block}")
-                return unblocked_dmg
+                return math.ceil(unblocked_dmg)
 
         else:
-            return modified_dmg
+            return math.ceil(modified_dmg)
 
     def roll_enemy_initiative(self):
         initative_roll = random.randint(1, 6) + self.stats["Agility"]
