@@ -43,8 +43,7 @@ class Player:
                 print("You must select a number")
                 continue
 
-    def use_player_ability(self, target):
-        ability = self.chosen_ability
+    def use_player_ability(self, ability,  target):
         mana_cost = self.abilities[ability]["mana cost"]
         if self.mana < mana_cost:
             print("Must construct additional pylons")
@@ -54,11 +53,11 @@ class Player:
             print(f"You spend {mana_cost} energy to buff yourself with {self.abilities[ability]["effect"]}")
         else:
             print(f"You spend {mana_cost} energy to cast {ability} on {target.name}")
-            damage = self.calc_player_dmg(target)
+            damage = self.calc_player_dmg(ability, target)
             if damage > 0:
-                if self._vulnerable_check(target) == True:
+                if self._vulnerable_check(ability, target) == True:
                     print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
-                if self._resistant_check(target) == True:
+                if self._resistant_check(ability, target) == True:
                     print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
                 target.health -= damage
                 target.is_alive = target.health > 0
@@ -81,8 +80,7 @@ class Player:
             else:
                 print(f"You have {self.rage_duration} turns of rage left")
 
-    def calc_player_dmg(self, target):
-        ability = self.chosen_ability
+    def calc_player_dmg(self, ability, target):
         base_damage = 0
         for i in range(0, self.abilities[ability]["die count"]):
             base_damage += random.randint(self.abilities[ability]["dmg min"], self.abilities[ability]["dmg max"])
@@ -98,32 +96,30 @@ class Player:
                 return 0
             else:
                 print(f"{target.name} managed to reduce your attack by {block_amount}!")
-                if self._vulnerable_check(target) == True:
+                if self._vulnerable_check(ability, target) == True:
                     final_damage = unblocked_dmg * 2
                     return final_damage
-                if self._resistant_check(target) == True:
+                if self._resistant_check(ability, target) == True:
                     final_damage = math.ceil(unblocked_dmg *0.5)
                     return final_damage
                 else:
                     return unblocked_dmg
         else:
-            if self._vulnerable_check(target) == True:
+            if self._vulnerable_check(ability, target) == True:
                 final_damage = modified_dmg * 2
                 return final_damage
-            if self._resistant_check(target) == True:
+            if self._resistant_check(ability, target) == True:
                 final_damage = math.ceil(modified_dmg*0.5)
                 return final_damage
             else:
                 return modified_dmg
 
 
-    def _vulnerable_check(self, target):
-        ability = self.chosen_ability
+    def _vulnerable_check(self, ability, target):
         if self.abilities[ability]["element"] in target.vulnerabilities:
             return True
 
-    def _resistant_check(self, target):
-        ability = self.chosen_ability
+    def _resistant_check(self, ability, target):
         if self.abilities[ability]["element"] in target.resistances:
             return True
 
