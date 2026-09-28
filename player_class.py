@@ -8,21 +8,28 @@ class Player:
     def __init__(self, name):
         self.name = name
         self.health = 100
+        self.health_cap = 100
         self.mana = 100
+        self.mana_cap = 100
         self.health_regen = 0
-        self.mana_regen = 5 * self.stats["Intelligence"]
+        self.stats = {
+                    "Strength": 3,
+                    "Agility" : 2,
+                    "Intelligence" : 2,
+                    "Vitality" : 3
+                }
+        self.base_mana_regen = 5 * self.stats["Intelligence"]
         self.buffs = {}
         self.is_alive = self.health > 0
         self.dmg_modifier = 1
+        self.rage_modifier = 1
         self.rage_duration = 0
+        self.clarity_duration = 0
+        self.clarity_intensity = 0
+        self.regen_intensity = 0
+        self.regen_duration = 0
         self.chosen_ability = None
         self.initiative = None
-        self.stats = {
-            "Strength": 3,
-            "Agility" : 2,
-            "Intelligence" : 2,
-            "Vitality" : 3
-        }
 
     def roll_player_initiative(self):
         initiative_roll = random.randint(1, 6) + self.stats["Agility"]
@@ -34,7 +41,7 @@ class Player:
             print(f"{i+1}) {ability}")
         while True:
             try:
-                selected_number = int(input("\nSelect Your Ability"))
+                selected_number = int(input("\nSelect Your Ability "))
                 if selected_number < 1 or selected_number > len(self.abilities):
                     print("Please select a number within range")
                     continue
@@ -45,14 +52,21 @@ class Player:
                 print("You must select a number")
                 continue
 
-    def use_player_ability(self, ability,  target):
+    def player_acquire_target(self, ability, enemy):
+        if self.abilities[ability]["target"] == "self":
+            return self
+        if self.abilities[ability]["target"] == "enemy":
+            return enemy
+
+    def use_player_ability(self, ability, enemy):
         mana_cost = self.abilities[ability]["mana cost"]
         if self.mana < mana_cost:
             print("Must construct additional pylons")
             return
         self.mana -= mana_cost
+        target = self.player_acquire_target(ability, enemy)
         if self.abilities[ability]["type"] == "buff":
-            self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"])
+            self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"], self.abilities[ability]["intensity"], target)
             print(f"\nYou spend {mana_cost} energy to buff yourself with {self.abilities[ability]["effect"]}")
         elif self.abilities[ability]["type"] == "attack":
             print(f"\nYou spend {mana_cost} energy to use {ability} on {target.name}")
@@ -73,31 +87,104 @@ class Player:
         else:
             print(f"{target.name} managed to avoid taking damage! The cheeky bugger!")
 
-    def apply_player_buff(self, duration, effect):
+    def apply_player_buff(self, duration, effect, intensity, target):
         if effect == "rage":
-            self.dmg_modifier *= 2
-            self.rage_duration = duration
-            print("You fly into a rage")
-            
+            target.apply_player_rage(duration, intensity)
+        if effect == "clarity":
+            target.apply_player_clarity(duration, intensity)
+        if effect == "regen":
+            target.apply_player_regen(duration, intensity)
 
-    def player_turn_start(self):
-        ## Make regening mana a whole other function, then you can check for if you'll hit max mana and also apply buffs.
-        self.mana += self.mana_regen
-        print(f"You regain {self.mana_regen} mana at the start of your turn")
+    def apply_player_regen(self, duration, intensity):
+        if self.regen_duration > 0:
+            print(f"{self.name}'s regeneration has been overwritten")
+            self.regen_intensity = intensity
+            self.regen_duration = duration
+        else:
+            print(f"{self.name} has started to regenerate")
+            self.regen_intensity = intensity
+            self.regen_duration = duration
+
+    def handle_regen_decay(self):
+        if self.regen_duration > 0:
+            self.regen_duration -= 1
+            if self.regen_duration == 0:
+                self.regen_intensity = 0
+                print(f"{self.name} has stopped regenerating")
+            else:
+                print(f"{self.name} has {self.regen_duration} turns left of their regeneration")
+
+    def player_regen_health(self):
+        regen_amount = self.stats["Vitality"] * self.regen_intensity
+        if self.regen_duration > 0:
+            self.health += regen_amount
+            if self.health > self.health_cap:
+                self.health = self.health_cap
+                print(f"{self.name} heals back up to full")
+            else:
+                print(f"{self.name} heals for {regen_amount} health points")
+
+    def apply_player_rage(self, duration, intensity):
+        if self.rage_duration > 0:
+            self.rage_duration += duration
+            print(f"{self.name}'s rage is refreshed")
+        else:
+            self.rage_modifier *= 1 + intensity
+            self.rage_duration = duration
+            print(f"{self.name} flies into a rage")
+
+
+    def handle_player_rage_decay(self):
         if self.rage_duration > 0:
             self.rage_duration -= 1
             if self.rage_duration == 0:
-                self.dmg_modifier /= 2
+                self.rage_modifier = 1
                 print("Your rage has worn off")
             else:
                 print(f"You have {self.rage_duration} turns of rage left")
+
+    def apply_player_clarity(self, duration, intensity):
+        if self.clarity_duration > 0:
+            self.clarity_duration += duration
+            print(f"{self.name}'s mind sharpens and their sense of clarity extends")
+        else:
+            self.clarity_duration += duration
+            self.clarity_intensity += intensity
+            print(f"{self.name} enters a state of intense focus")
+
+    def handle_clarity_decay(self):
+        if self.clarity_duration > 0:
+            self.clarity_duration -= 1
+            if self.clarity_duration == 0:
+                self.clarity_intensity = 0
+                print("Your sense of clarity has worn off")
+            else:
+                print(f"You have {self.clarity_duration} turns of clarity left")
+
+    def player_regen_mana(self):
+        mana_regen = self.base_mana_regen
+        if self.clarity_duration > 0:
+            mana_regen *= 1 + self.clarity_intensity
+        self.mana += mana_regen
+        if self.mana >= self.mana_cap:
+            self.mana = self.mana_cap
+        print(f"You recover {mana_regen} mana at the start of your turn")
+
+    
+
+    def player_turn_start(self):
+        self.player_regen_mana() ## decide how buffs interact with turns, whether they wear off before or after turn start calcu
+        self.player_regen_health()
+        self.handle_clarity_decay()
+        self.handle_regen_decay()
+
 
     def calc_player_dmg(self, ability, target):
         base_damage = 0
         for i in range(0, self.abilities[ability]["die count"]):
             base_damage += random.randint(self.abilities[ability]["dmg min"], self.abilities[ability]["dmg max"])
         ability_affinity = self.abilities[ability]["affinity"]
-        modified_dmg = math.ceil((base_damage + self.stats[ability_affinity]) * self.dmg_modifier)
+        modified_dmg = math.ceil((base_damage + self.stats[ability_affinity]) * self.dmg_modifier * self.rage_modifier)
         if target.abilities[target.chosen_ability]["type"] == "block":
             block_amount = 0
             for i in range(0, target.abilities[target.chosen_ability]["die count"]):

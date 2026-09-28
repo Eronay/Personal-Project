@@ -11,7 +11,8 @@ class greatsword(Player):
                 "die count": 1,
                 "element": "physical",
                 "type": "attack",
-                "mana cost": 0
+                "mana cost": 0,
+                "target": "enemy"
             },
 
             "Great Swing": {
@@ -21,7 +22,8 @@ class greatsword(Player):
                 "die count": 1,
                 "element": "physical",
                 "type": "attack",
-                "mana cost": 2
+                "mana cost": 2,
+                "target": "enemy"
             },
 
             "Endure": {
@@ -40,14 +42,27 @@ class greatsword(Player):
                 "die count": 3,
                 "element": "physical",
                 "type": "attack",
-                "mana cost": 40
+                "mana cost": 40,
+                "target": "enemy"
             },
 
             "Rage": {
                 "type": "buff",
                 "duration": 5,
                 "mana cost": 15,
-                "effect": "rage"
+                "effect": "rage",
+                "target": "self",
+                "intensity": 1
+            },
+
+            "Second Wind": {
+                "type": "buff",
+                "duration": 2,
+                "mana cost": 20,
+                "effect": "regen",
+                "target": "self",
+                "intensity": 1
             }
+
             
         }
