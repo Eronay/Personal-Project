@@ -10,21 +10,29 @@ class Enemy:
         self.chosen_ability = None
         self.is_alive = self.health > 0
         self.dmg_modifier = 1
+        self.character_type = "enemy"
+        self.target = None
+        
 
-    def select_enemy_ability(self):
+    def select_enemy_ability(self, targets):
         ability_list = list(self.abilities.keys())
         ability_chances = [self.abilities[ability]["chance"] for ability in ability_list]
         chosen_ability = random.choices(ability_list, weights = ability_chances, k=1)[0]
         self.chosen_ability = chosen_ability
-        print(f"{self.name} has chosen to use {chosen_ability}, think carefully!")
+        if self.abilities[chosen_ability]["type"] == "attack":
+            self.target = targets[random.randint(0, len(targets) -1)]
+            print(f"{self.name} has chosen to attack {self.target} with {chosen_ability}")
+        if self.abilities[chosen_ability]["type"] == "block":
+            print(f"{self.name} has chosen to defend themselves with {chosen_ability}")
+            self.target = None
 
     def use_enemy_ability(self, ability, target):
         if self.abilities[ability]["type"] == "attack":
             damage = self.calc_enemy_damage(ability, target)
             if damage <= 0:
-                print(f"The {self.name} attacks with {ability}, but you manage to block it!")
+                print(f"The {self.name} attacks with {ability}, but {target.name} manages to block it!")
             else:
-                print(f"The {self.name} attacks you with {ability} and deals {damage} damage!")
+                print(f"The {self.name} attacks {target.name} with {ability} and deals {damage} damage!")
                 target.health -= damage
                 target.is_alive = target.health > 0
 

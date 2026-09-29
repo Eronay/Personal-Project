@@ -3,40 +3,34 @@ import random
 from player_class import Player
 from enemy_class import Enemy
 
-def resolve_turn(player, enemy):
-    player.roll_player_initiative()
-    enemy.roll_enemy_initiative()
-    player.player_turn_start()
-    if player.initiative > enemy.initiative:
-        enemy.select_enemy_ability()
+def roll_all_initiatives(participants):
+    for participant in participants:
+        participant.initiative = (random.randint(1,6) + participant.stats["Agility"])
+    sorted_order = sorted(participants, key = lambda participant: participant.initiative, reverse = True)
+    print(sorted_order)
+    return sorted_order
+
+def remove_dead(self):
+    for character in self:
+        if character.is_alive == False:
+            self.remove(character)
+
+def execute_turn(self):
+    if self.character_type == "player":
+        self.use_player_ability(self.chosen_ability)
+    elif self.character_type == "enemy":
+        self.use_enemy_ability(self.chosen_ability, self.target)
+
+def resolve_turn(players, enemies):
+    initiative_order = roll_all_initiatives(players + enemies)
+    for enemy in enemies:
+        enemy.select_enemy_ability(players)
+    for player in players:
+        player.player_turn_start()
         player.select_player_ability()
-        print("\nYou go first")
-        player.use_player_ability(player.chosen_ability, enemy)
-        if enemy.is_alive:
-            enemy.use_enemy_ability(enemy.chosen_ability, player)
+        player.player_acquire_target(player.chosen_ability, enemies, players)
+    for character in initiative_order:
+        execute_turn(character)
+    remove_dead(enemies)
 
-    elif player.initiative < enemy.initiative:
-        enemy.select_enemy_ability()
-        player.select_player_ability()
-        print(f"\n{enemy.name} goes first")
-        enemy.use_enemy_ability(enemy.chosen_ability, player)
-        if player.is_alive:
-            player.use_player_ability(player.chosen_ability, enemy)
 
-    elif player.initiative == enemy.initiative:
-        turn_resolution = random.randint(1, 2)
-        if turn_resolution == 1:
-            enemy.select_enemy_ability()
-            player.select_player_ability()
-            print("\nYou go first")
-            player.use_player_ability(player.chosen_ability, enemy)
-            if enemy.is_alive:
-                enemy.use_enemy_ability(enemy.chosen_ability, player)
-
-        else:
-            enemy.select_enemy_ability()
-            player.select_player_ability()
-            print(f"\n{enemy.name} goes first")
-            enemy.use_enemy_ability(enemy.chosen_ability, player)
-            if player.is_alive:
-                player.use_player_ability(player.chosen_ability, enemy)

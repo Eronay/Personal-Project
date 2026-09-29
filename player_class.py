@@ -30,6 +30,8 @@ class Player:
         self.regen_duration = 0
         self.chosen_ability = None
         self.initiative = None
+        self.character_type = "player"
+        self.target = None
 
     def roll_player_initiative(self):
         initiative_roll = random.randint(1, 6) + self.stats["Agility"]
@@ -52,25 +54,42 @@ class Player:
                 print("You must select a number")
                 continue
 
-    def player_acquire_target(self, ability, enemy):
+    def player_acquire_target(self, ability, enemies, allies):
         if self.abilities[ability]["target"] == "self":
-            return self
-        if self.abilities[ability]["target"] == "enemy":
-            return enemy
+            self.target = self
+        elif self.abilities[ability]["target"]  == "ally":
+            for i, ally, in enumerate(allies):
+                print(f"{i+1}) {ally}")
+            while True:
+                try:
+                    self.target = allies[int(input("\nSelect your target"))]
+                    break
+                except ValueError:
+                    print("Please select a valid target")
+        elif self.abilities[ability]["target"] == "enemy":
+            for i, enemy in enumerate(enemies):
+                print(f"{i+1}) {enemy}")
+            while True:
+                try:
+                    self.target = enemies[int(input("\nSelect your target"))]
+                    break
+                except ValueError:
+                    print("Please select a valid target")
+            
 
-    def use_player_ability(self, ability, enemy):
+
+    def use_player_ability(self, ability):
         mana_cost = self.abilities[ability]["mana cost"]
         if self.mana < mana_cost:
             print("Must construct additional pylons")
             return
         self.mana -= mana_cost
-        target = self.player_acquire_target(ability, enemy)
         if self.abilities[ability]["type"] == "buff":
-            self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"], self.abilities[ability]["intensity"], target)
-            print(f"\nYou spend {mana_cost} energy to buff yourself with {self.abilities[ability]["effect"]}")
+            self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"], self.abilities[ability]["intensity"], self.target)
+            print(f"\nYou spend {mana_cost} energy to buff {self.target.name} with {self.abilities[ability]["effect"]}")
         elif self.abilities[ability]["type"] == "attack":
-            print(f"\nYou spend {mana_cost} energy to use {ability} on {target.name}")
-            self.player_uses_attack(ability, target)
+            print(f"\nYou spend {mana_cost} energy to use {ability} on {self.target.name}")
+            self.player_uses_attack(ability, self.target)
         elif self.abilities[ability]["type"] == "block":
             print(f"\nYou spend {mana_cost} mana in order to use {ability} to defend yourself")
 
