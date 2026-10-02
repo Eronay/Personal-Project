@@ -68,12 +68,14 @@ class Player:
                     print("Please select a valid target")
         elif self.abilities[ability]["target"] == "enemy":
             for i, enemy in enumerate(enemies):
-                print(f"{i+1}) {enemy}")
+                print(f"{i+1}) {enemy.name}")
             while True:
                 try:
-                    self.target = enemies[int(input("\nSelect your target"))]
+                    self.target = enemies[int(input("\nSelect your target")) -1]
                     break
                 except ValueError:
+                    print("Please select a valid target")
+                except IndexError:
                     print("Please select a valid target")
             
 

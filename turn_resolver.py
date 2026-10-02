@@ -7,7 +7,11 @@ def roll_all_initiatives(participants):
     for participant in participants:
         participant.initiative = (random.randint(1,6) + participant.stats["Agility"])
     sorted_order = sorted(participants, key = lambda participant: participant.initiative, reverse = True)
-    print(sorted_order)
+    print(f"\n //Initiative Order//\n")
+    i = 1
+    for character in sorted_order:
+        print(f"{i}) {character.name}")
+        i += 1
     return sorted_order
 
 def remove_dead(self):
