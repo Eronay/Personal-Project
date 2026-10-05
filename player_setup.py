@@ -14,7 +14,7 @@ def create_player_name():
 def choose_weapon():
     weapons = ["Greatsword"]
     for i, weapon in enumerate(weapons):
-        print(f"{i+1}, {weapon}")
+        print(f"{i+1}) {weapon}")
     while True:
         try:
             chosen_number = int(input("\nPlease select a worthy weapon\n"))

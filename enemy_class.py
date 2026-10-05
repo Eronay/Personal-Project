@@ -21,9 +21,9 @@ class Enemy:
         self.chosen_ability = chosen_ability
         if self.abilities[chosen_ability]["type"] == "attack":
             self.target = targets[random.randint(0, len(targets) -1)]
-            print(f"\n{self.name} has chosen to attack {self.target} with {chosen_ability}")
+            print(f"{self.name} has chosen to attack {self.target.name} with {chosen_ability}")
         elif self.abilities[chosen_ability]["type"] == "block":
-            print(f"\n{self.name} has chosen to defend themselves with {chosen_ability}")
+            print(f"{self.name} has chosen to defend themselves with {chosen_ability}")
             self.target = None
 
     def use_enemy_ability(self, ability, target):

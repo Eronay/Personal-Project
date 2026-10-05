@@ -32,18 +32,19 @@ class greatsword(Player):
                 "block max": 6,
                 "die count": 1,
                 "type": "block",
-                "mana cost": 10
+                "mana cost": 10,
+                "target": "self"
             },
 
             "Whirlwind": {
                 "affinity": "Strength",
                 "dmg min": 1,
-                "dmg max": 8,
-                "die count": 3,
+                "dmg max": 4,
+                "die count": 1,
                 "element": "physical",
                 "type": "attack",
                 "mana cost": 40,
-                "target": "enemy"
+                "target": "all"
             },
 
             "Rage": {

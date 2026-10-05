@@ -66,21 +66,26 @@ class Player:
                     break
                 except ValueError:
                     print("Please select a valid target")
+
+        
         elif self.abilities[ability]["target"] == "enemy":
-            for i, enemy in enumerate(enemies):
-                print(f"{i+1}) {enemy.name}")
-            while True:
-                try:
-                    self.target = enemies[int(input("\nSelect your target")) -1]
-                    break
-                except ValueError:
-                    print("Please select a valid target")
-                except IndexError:
-                    print("Please select a valid target")
-            
+            if len(enemies) > 1:
+                for i, enemy in enumerate(enemies):
+                    print(f"{i+1}) {enemy.name}")
+                while True:
+                    try:
+                        self.target = enemies[int(input("\nSelect your target")) -1]
+                        break
+                    except ValueError:
+                        print("Please select a valid target")
+                    except IndexError:
+                        print("Please select a valid target")
+            else:
+                self.target = enemies[0]
+                
 
 
-    def use_player_ability(self, ability):
+    def use_player_ability(self, ability, enemies):
         mana_cost = self.abilities[ability]["mana cost"]
         if self.mana < mana_cost:
             print("Must construct additional pylons")
@@ -89,6 +94,10 @@ class Player:
         if self.abilities[ability]["type"] == "buff":
             self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"], self.abilities[ability]["intensity"], self.target)
             print(f"\nYou spend {mana_cost} energy to buff {self.target.name} with {self.abilities[ability]["effect"]}")
+        elif self.abilities[ability]["type"] == "attack" and self.abilities[ability]["target"] == "all":
+            print(f"You spend {mana_cost} energy to use {ability} on your enemies")
+            for enemy in enemies:
+                self.player_uses_attack(ability, enemy)
         elif self.abilities[ability]["type"] == "attack":
             print(f"\nYou spend {mana_cost} energy to use {ability} on {self.target.name}")
             self.player_uses_attack(ability, self.target)
@@ -102,7 +111,7 @@ class Player:
                 print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
             if self._resistant_check(ability, target) == True:
                 print(f"{target.name} appears to be RESISTANT to {self.abilities[ability]["element"]} damage!")
-            print(f"You deal {damage} damage")
+            print(f"You deal {damage} damage to {target.name}")
             target.health -= damage
             target.is_alive = target.health > 0
         else:
@@ -198,6 +207,7 @@ class Player:
         self.player_regen_health()
         self.handle_clarity_decay()
         self.handle_regen_decay()
+        self.handle_player_rage_decay()
 
 
     def calc_player_dmg(self, ability, target):
@@ -215,7 +225,7 @@ class Player:
             if unblocked_dmg <= 0:
                 return 0
             else:
-                print(f"{target.name} managed to reduce your attack by {block_amount}!")
+                print(f"{target.name} managed to reduce your attack by {modified_block}!")
                 if self._vulnerable_check(ability, target) == True:
                     final_damage = unblocked_dmg * 2
                     return math.ceil(final_damage)
