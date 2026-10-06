@@ -18,7 +18,7 @@ class greatsword(Player):
             "Great Swing": {
                 "affinity": "Strength",
                 "dmg min": 1,
-                "dmg max": 12,
+                "dmg max": 8,
                 "die count": 1,
                 "element": "physical",
                 "type": "attack",

@@ -1,5 +1,6 @@
 from player_class import Player
 from weapons.greatsword import greatsword
+from weapons.dual_daggers import dual_daggers
 
 def create_player_name():
     while True:
@@ -12,7 +13,7 @@ def create_player_name():
 
     
 def choose_weapon():
-    weapons = ["Greatsword"]
+    weapons = ["Greatsword", "Dual Daggers"]
     for i, weapon in enumerate(weapons):
         print(f"{i+1}) {weapon}")
     while True:
@@ -29,6 +30,8 @@ def choose_weapon():
 def create_player(player_name, chosen_weapon):
     if chosen_weapon == "Greatsword":
         player = greatsword(player_name)
+    if chosen_weapon == "Dual Daggers":
+        player = dual_daggers(player_name)
     return player
 
 
