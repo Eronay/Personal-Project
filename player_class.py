@@ -28,10 +28,12 @@ class Player:
         self.clarity_intensity = 0
         self.regen_intensity = 0
         self.regen_duration = 0
-        self.chosen_ability = None
+        self.chosen_abilities = {}
         self.initiative = None
         self.character_type = "player"
         self.target = None
+        self.max_energy = 4
+        self.remaining_energy = 0
 
     def roll_player_initiative(self):
         initiative_roll = random.randint(1, 6) + self.stats["Agility"]
@@ -48,7 +50,10 @@ class Player:
                     print("Please select a number within range")
                     continue
                 chosen_ability = list(self.abilities.keys())[selected_number - 1]
-                self.chosen_ability = chosen_ability
+                if self.abilities[chosen_ability]["energy cost"] > self.remaining_energy:
+                    print("You do not have enough energy for that ability")
+                    continue
+                self.remaining_energy -= self.abilities[chosen_ability]["energy cost"]
                 return chosen_ability
             except ValueError:
                 print("You must select a number")
@@ -56,13 +61,14 @@ class Player:
 
     def player_acquire_target(self, ability, enemies, allies):
         if self.abilities[ability]["target"] == "self":
-            self.target = self
+            self.chosen_abilities[ability] = "self"
         elif self.abilities[ability]["target"]  == "ally":
             for i, ally, in enumerate(allies):
                 print(f"{i+1}) {ally}")
             while True:
                 try:
-                    self.target = allies[int(input("\nSelect your target"))]
+                    target = allies[int(input("\nSelect your target"))]
+                    self.chosen_abilities[ability] = target
                     break
                 except ValueError:
                     print("Please select a valid target")
@@ -74,7 +80,8 @@ class Player:
                     print(f"{i+1}) {enemy.name}")
                 while True:
                     try:
-                        self.target = enemies[int(input("\nSelect your target")) -1]
+                        target = enemies[int(input("\nSelect your target")) -1]
+                        self.chosen_abilities[ability] = target
                         break
                     except ValueError:
                         print("Please select a valid target")
@@ -86,23 +93,23 @@ class Player:
 
 
     def use_player_ability(self, ability, enemies):
-        mana_cost = self.abilities[ability]["mana cost"]
-        if self.mana < mana_cost:
+        energy_cost = self.abilities[ability]["energy cost"]
+        if self.remaining_energy < energy_cost:
             print("Must construct additional pylons")
             return
-        self.mana -= mana_cost
+        self.remaining_energy -= energy_cost
         if self.abilities[ability]["type"] == "buff":
             self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"], self.abilities[ability]["intensity"], self.target)
-            print(f"\nYou spend {mana_cost} energy to buff {self.target.name} with {self.abilities[ability]["effect"]}")
+            print(f"\nYou spend {energy_cost} energy to buff {self.target.name} with {self.abilities[ability]["effect"]}")
         elif self.abilities[ability]["type"] == "attack" and self.abilities[ability]["target"] == "all":
-            print(f"You spend {mana_cost} energy to use {ability} on your enemies")
+            print(f"You spend {energy_cost} energy to use {ability} on your enemies")
             for enemy in enemies:
                 self.player_uses_attack(ability, enemy)
         elif self.abilities[ability]["type"] == "attack":
-            print(f"\nYou spend {mana_cost} energy to use {ability} on {self.target.name}")
+            print(f"\nYou spend {energy_cost} energy to use {ability} on {self.target.name}")
             self.player_uses_attack(ability, self.target)
         elif self.abilities[ability]["type"] == "block":
-            print(f"\nYou spend {mana_cost} mana in order to use {ability} to defend yourself")
+            print(f"\nYou spend {energy_cost} mana in order to use {ability} to defend yourself")
 
     def player_uses_attack(self, ability, target):
         damage = self.calc_player_dmg(ability, target)
@@ -203,7 +210,8 @@ class Player:
     
 
     def player_turn_start(self):
-        self.player_regen_mana() ## decide how buffs interact with turns, whether they wear off before or after turn start calcu
+        self.chosen_abilities = {}
+        self.remaining_energy = self.max_energy
         self.player_regen_health()
         self.handle_clarity_decay()
         self.handle_regen_decay()

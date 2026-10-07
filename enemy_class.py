@@ -36,6 +36,9 @@ class Enemy:
                 target.health -= damage
                 target.is_alive = target.health > 0
 
+
+## fix damage calculations, blocks need to just go first.
+
     def calc_enemy_damage(self, ability, target):
         base_damage = 0
         for i in range(0, self.abilities[ability]["die count"]):

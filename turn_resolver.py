@@ -23,7 +23,9 @@ def remove_dead(self):
 
 def execute_turn(self, enemies):
     if self.character_type == "player":
-        self.use_player_ability(self.chosen_ability, enemies)
+        for ability, target in self.chosen_abilities:
+            self.target = target
+            self.use_player_abilitity(ability, enemies)
     elif self.character_type == "enemy":
         self.use_enemy_ability(self.chosen_ability, self.target)
 
@@ -35,10 +37,13 @@ def resolve_turn(players, enemies):
     for player in players:
         player.player_turn_start()
         print("\n")
-        player.select_player_ability()
-        print("\n")
-        player.player_acquire_target(player.chosen_ability, enemies, players)
-        print("\n")
+        while player.remaining_energy > 0:
+            print(f"{player.remaining_energy} energy remaining\n")
+            chosen_ability = player.select_player_ability()
+            print("\n")
+            player.player_acquire_target(chosen_ability, enemies, players)
+            print("\n")
+
     for character in initiative_order:
         execute_turn(character, enemies)
         remove_dead(enemies)
