@@ -15,23 +15,27 @@ def roll_all_initiatives(participants):
     print("\n")
     return sorted_order
 
-def remove_dead(self):
+def remove_dead(self, initiative_order):
     for character in self:
         if character.is_alive == False:
             print(f"{character.name} has been slain!")
             self.remove(character)
+            initiative_order.remove(character)
+            
 
 def execute_turn(self, enemies):
     if self.character_type == "player":
-        for ability, target in self.chosen_abilities:
-            self.target = target
-            self.use_player_abilitity(ability, enemies)
+        for i in range(len(self.chosen_abilities)):
+            ability = self.chosen_abilities[i]
+            self.target = self.targets[i]
+            self.use_player_ability(ability, enemies)
     elif self.character_type == "enemy":
         self.use_enemy_ability(self.chosen_ability, self.target)
 
 def resolve_turn(players, enemies):
     initiative_order = roll_all_initiatives(players + enemies)
     for enemy in enemies:
+        enemy.enemy_turn_start()
         enemy.select_enemy_ability(players)
     print("\n")
     for player in players:
@@ -46,6 +50,6 @@ def resolve_turn(players, enemies):
 
     for character in initiative_order:
         execute_turn(character, enemies)
-        remove_dead(enemies)
+        remove_dead(enemies, initiative_order)
 
 

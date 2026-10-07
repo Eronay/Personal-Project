@@ -12,6 +12,7 @@ class Enemy:
         self.dmg_modifier = 1
         self.character_type = "enemy"
         self.target = None
+        self.block_amount = 0
         
 
     def select_enemy_ability(self, targets):
@@ -23,8 +24,12 @@ class Enemy:
             self.target = targets[random.randint(0, len(targets) -1)]
             print(f"{self.name} has chosen to attack {self.target.name} with {chosen_ability}")
         elif self.abilities[chosen_ability]["type"] == "block":
-            print(f"{self.name} has chosen to defend themselves with {chosen_ability}")
+            self.block_amount += random.randint(self.abilities[chosen_ability]["block min"], self.abilities[chosen_ability]["block max"]) + self.stats[self.abilities[chosen_ability]["affinity"]]
+            print(f"{self.name} has chosen to defend themselves with {chosen_ability} for {self.block_amount} points of damage")
             self.target = None
+
+    def enemy_turn_start(self):
+        self.block_amount = 0
 
     def use_enemy_ability(self, ability, target):
         if self.abilities[ability]["type"] == "attack":
@@ -37,24 +42,19 @@ class Enemy:
                 target.is_alive = target.health > 0
 
 
-## fix damage calculations, blocks need to just go first.
-
     def calc_enemy_damage(self, ability, target):
         base_damage = 0
         for i in range(0, self.abilities[ability]["die count"]):
             base_damage += random.randint(self.abilities[ability]["dmg min"], self.abilities[ability]["dmg max"])
         ability_affinity = self.abilities[ability]["affinity"]
         modified_dmg = (base_damage + self.stats[ability_affinity]) * self.dmg_modifier
-        if target.abilities[target.chosen_ability]["type"] == "block":
-            block_amount = 0
-            for i in range(0, target.abilities[target.chosen_ability]["die count"]):
-                block_amount += random.randint(target.abilities[target.chosen_ability]["block min"], target.abilities[target.chosen_ability]["block max"])
-            modified_block = block_amount + target.stats[target.abilities[target.chosen_ability]["affinity"]]
-            unblocked_dmg = modified_dmg - modified_block
+        if target.block_amount > 0:
+            unblocked_dmg = modified_dmg - target.block_amount
+            target.block_amount -= modified_dmg
             if unblocked_dmg <= 0:
                 return 0
             else:
-                print(f"You managed to reduce their damage by {modified_block}")
+                print(f"You managed to reduce their damage by {modified_dmg - target.block_amount}")
                 return math.ceil(unblocked_dmg)
 
         else:

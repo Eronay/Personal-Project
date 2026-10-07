@@ -28,12 +28,14 @@ class Player:
         self.clarity_intensity = 0
         self.regen_intensity = 0
         self.regen_duration = 0
-        self.chosen_abilities = {}
+        self.chosen_abilities = []
+        self.targets = []
         self.initiative = None
         self.character_type = "player"
         self.target = None
         self.max_energy = 4
         self.remaining_energy = 0
+        self.block_amount = 0
 
     def roll_player_initiative(self):
         initiative_roll = random.randint(1, 6) + self.stats["Agility"]
@@ -54,6 +56,10 @@ class Player:
                     print("You do not have enough energy for that ability")
                     continue
                 self.remaining_energy -= self.abilities[chosen_ability]["energy cost"]
+                if self.abilities[ability]["type"] == "block":
+                    self.block_amount += random.randint(self.abilities[ability]["block min"], self.abilities[ability]["block max"]) + self.stats[self.abilities[ability]["affinity"]]
+                    print(f"\nYou spend {self.abilities[ability]["energy cost"]} energy in order to use {ability} to defend yourself")
+                self.chosen_abilities.append(chosen_ability)
                 return chosen_ability
             except ValueError:
                 print("You must select a number")
@@ -61,14 +67,14 @@ class Player:
 
     def player_acquire_target(self, ability, enemies, allies):
         if self.abilities[ability]["target"] == "self":
-            self.chosen_abilities[ability] = "self"
+            self.targets.append(self)
         elif self.abilities[ability]["target"]  == "ally":
             for i, ally, in enumerate(allies):
                 print(f"{i+1}) {ally}")
             while True:
                 try:
                     target = allies[int(input("\nSelect your target"))]
-                    self.chosen_abilities[ability] = target
+                    self.targets.append(target)
                     break
                 except ValueError:
                     print("Please select a valid target")
@@ -81,39 +87,41 @@ class Player:
                 while True:
                     try:
                         target = enemies[int(input("\nSelect your target")) -1]
-                        self.chosen_abilities[ability] = target
+                        self.targets.append(target)
                         break
                     except ValueError:
                         print("Please select a valid target")
                     except IndexError:
                         print("Please select a valid target")
             else:
-                self.target = enemies[0]
+                self.targets.append(enemies[0])
+        elif self.abilities[ability]["target"] == "all":
+            self.targets.append("all")
                 
 
 
     def use_player_ability(self, ability, enemies):
         energy_cost = self.abilities[ability]["energy cost"]
-        if self.remaining_energy < energy_cost:
-            print("Must construct additional pylons")
-            return
         self.remaining_energy -= energy_cost
         if self.abilities[ability]["type"] == "buff":
             self.apply_player_buff(self.abilities[ability]["duration"], self.abilities[ability]["effect"], self.abilities[ability]["intensity"], self.target)
             print(f"\nYou spend {energy_cost} energy to buff {self.target.name} with {self.abilities[ability]["effect"]}")
+
         elif self.abilities[ability]["type"] == "attack" and self.abilities[ability]["target"] == "all":
             print(f"You spend {energy_cost} energy to use {ability} on your enemies")
             for enemy in enemies:
                 self.player_uses_attack(ability, enemy)
+
         elif self.abilities[ability]["type"] == "attack":
             print(f"\nYou spend {energy_cost} energy to use {ability} on {self.target.name}")
             self.player_uses_attack(ability, self.target)
-        elif self.abilities[ability]["type"] == "block":
-            print(f"\nYou spend {energy_cost} mana in order to use {ability} to defend yourself")
 
     def player_uses_attack(self, ability, target):
+        
         damage = self.calc_player_dmg(ability, target)
-        if damage > 0:
+        if damage == "dead":
+                    print("You have slain this foe already")
+        elif damage > 0:
             if self._vulnerable_check(ability, target) == True:
                 print(f"{target.name} appears to be VULNERABLE to {self.abilities[ability]["element"]} damage!")
             if self._resistant_check(ability, target) == True:
@@ -121,7 +129,9 @@ class Player:
             print(f"You deal {damage} damage to {target.name}")
             target.health -= damage
             target.is_alive = target.health > 0
-        else:
+            if not target.is_alive:
+                print("You have slain this foe")
+        elif damage == 0:
             print(f"{target.name} managed to avoid taking damage! The cheeky bugger!")
 
     def apply_player_buff(self, duration, effect, intensity, target):
@@ -210,7 +220,9 @@ class Player:
     
 
     def player_turn_start(self):
-        self.chosen_abilities = {}
+        self.block_amount = 0
+        self.chosen_abilities = []
+        self.targets = []
         self.remaining_energy = self.max_energy
         self.player_regen_health()
         self.handle_clarity_decay()
@@ -219,21 +231,22 @@ class Player:
 
 
     def calc_player_dmg(self, ability, target):
+        if not target.is_alive:
+            return "dead"
         base_damage = 0
         for i in range(0, self.abilities[ability]["die count"]):
             base_damage += random.randint(self.abilities[ability]["dmg min"], self.abilities[ability]["dmg max"])
         ability_affinity = self.abilities[ability]["affinity"]
         modified_dmg = math.ceil((base_damage + self.stats[ability_affinity]) * self.dmg_modifier * self.rage_modifier)
-        if target.abilities[target.chosen_ability]["type"] == "block":
-            block_amount = 0
-            for i in range(0, target.abilities[target.chosen_ability]["die count"]):
-                block_amount += random.randint(target.abilities[target.chosen_ability]["block min"], target.abilities[target.chosen_ability]["block max"])
-            modified_block = block_amount + target.stats[target.abilities[target.chosen_ability]["affinity"]]
-            unblocked_dmg = modified_dmg - modified_block
+        print(f"You attack for {modified_dmg} points of damage")
+        if target.block_amount > 0:
+            block_amount = target.block_amount
+            unblocked_dmg = modified_dmg - block_amount
+            target.block_amount -= modified_dmg
             if unblocked_dmg <= 0:
                 return 0
             else:
-                print(f"{target.name} managed to reduce your attack by {modified_block}!")
+                print(f"{target.name} managed to reduce your attack by {block_amount}!")
                 if self._vulnerable_check(ability, target) == True:
                     final_damage = unblocked_dmg * 2
                     return math.ceil(final_damage)
