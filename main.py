@@ -14,7 +14,7 @@ def main():
         print(f"\n/// TURN {turn_number} ///\n")
         turn_number += 1
         resolve_turn(players, enemies)
-        print(f"\nplayer health = {player.health}\nplayer mana = {player.mana}\n")
+        print(f"\nplayer health = {player.health}\n")
         print("\n")
         for enemy in enemies:
             print(f"{enemy.name} has {enemy.health} health left")

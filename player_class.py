@@ -44,7 +44,7 @@ class Player:
 
     def select_player_ability(self):
         for i, ability in enumerate(self.abilities):
-            print(f"{i+1}) {ability}")
+            print(f"{i+1}) {ability}, {self.abilities[ability]["energy cost"]}")
         while True:
             try:
                 selected_number = int(input("\nSelect Your Ability "))
